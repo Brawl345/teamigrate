@@ -1,0 +1,6 @@
+.env
+.vscode
+.idea
+*.iml
+teamigrate
+teamigrate.exe
