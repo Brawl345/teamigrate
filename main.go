@@ -16,10 +16,11 @@ import (
 
 type (
 	programOptions struct {
-		GiteaInstance string
-		GitHubToken   string
-		GiteaToken    string
-		GiteaOwner    string
+		GiteaInstance       string
+		GitHubToken         string
+		GiteaToken          string
+		GiteaOwner          string
+		ForceUseGitHubToken bool
 	}
 
 	GitHubRepo struct {
@@ -49,10 +50,11 @@ type (
 
 func loadOptions() programOptions {
 	return programOptions{
-		GiteaInstance: os.Getenv("GITEA_INSTANCE"),
-		GitHubToken:   os.Getenv("GITHUB_TOKEN"),
-		GiteaToken:    os.Getenv("GITEA_TOKEN"),
-		GiteaOwner:    os.Getenv("GITEA_OWNER"),
+		GiteaInstance:       os.Getenv("GITEA_INSTANCE"),
+		GitHubToken:         os.Getenv("GITHUB_TOKEN"),
+		GiteaToken:          os.Getenv("GITEA_TOKEN"),
+		GiteaOwner:          os.Getenv("GITEA_OWNER"),
+		ForceUseGitHubToken: os.Getenv("FORCE_USE_GITHUB_TOKEN") == "true",
 	}
 }
 
@@ -111,7 +113,7 @@ func migrateRepo(options *programOptions) {
 	log.Printf("Got repo: %s", repo.Name)
 
 	var authToken string
-	if repo.Private {
+	if options.ForceUseGitHubToken || repo.Private {
 		authToken = options.GitHubToken
 	}
 	migrateOptions := MigrateRepoOptions{
@@ -197,6 +199,9 @@ func main() {
 	fmt.Println("- Welcome to teamigrate -")
 	fmt.Printf("GITEA_INSTANCE: %s\n", options.GiteaInstance)
 	fmt.Printf("GITEA_OWNER: %s\n", options.GiteaOwner)
+	if options.ForceUseGitHubToken {
+		fmt.Println("Will always use GitHub token")
+	}
 
 	for {
 		migrateRepo(&options)
