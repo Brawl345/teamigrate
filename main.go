@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -72,6 +73,7 @@ func migrateRepo(options *programOptions) {
 	}
 	username := match[1]
 	repoName := match[2]
+	repoName = strings.TrimSuffix(repoName, ".git")
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.github.com/repos/%s/%s", username, repoName), nil)
 	if err != nil {
@@ -107,6 +109,11 @@ func migrateRepo(options *programOptions) {
 	var repo GitHubRepo
 	if err := json.Unmarshal(giteaBody, &repo); err != nil {
 		log.Println(err)
+		return
+	}
+
+	if repo.Name == "" {
+		log.Println("No repo found")
 		return
 	}
 
